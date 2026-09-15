@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lactinov Wheel of Fortune</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .wheel-center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 5;
+            border: 3px solid #fff;
+        }
+
+        .wheel-center-logo img {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #2b7bc3;
+            z-index: 10;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #8cc63f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #7ab430;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        @keyframes dropIn {
+            0% {
+                transform: translateY(-100px) scale(0.5);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(15px) scale(1.05);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(-5px) scale(0.95);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-card {
+            margin-top: 25px;
+            padding: 20px 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            opacity: 0;
+        }
+
+        .result-card.show {
+            animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .result-card h2 {
+            margin: 0 0 10px 0;
+            color: #2b7bc3;
+            font-size: 22px;
+        }
+
+        .result-card p {
+            margin: 0;
+            color: #555;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+       <div class="wheel-center-logo">
+            <!-- Logo intégré -->
+            <img src="https://i.ibb.co/7JfppDDJ/logo.png" alt="Lactinov" id="logoImg">
+        </div>
+        <canvas id="wheel" width="500" height="500"></canvas>
+    </div>
+
+    <button id="spinBtn" onclick="spinWheel()">SPIN THE WHEEL</button>
+
+    <div class="result-card" id="resultCard">
+        <h2 id="resultTitle"></h2>
+        <p id="resultText">Congratulations on your prize!</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultCard = document.getElementById('resultCard');
+        const resultTitle = document.getElementById('resultTitle');
+
+        const items = [
+            { text: "T-shirt", color: "#3282cc" },
+            { text: "Keychain", color: "#88c440" },
+            { text: "Tote bag", color: "#2b7bc3" },
+            { text: "Magnetic badge", color: "#93cb4a" },
+            { text: "Cap", color: "#3282cc" },
+            { text: "Pouch", color: "#88c440" },
+            { text: "Flavored milk", color: "#2b7bc3" }
+        ];
+
+        const numSegments = items.length;
+        const arcSize = (2 * Math.PI) / numSegments;
+        let currentAngle = 0;
+        let isSpinning = false;
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const center = canvas.width / 2;
+            const radius = canvas.width / 2;
+
+            for (let i = 0; i < numSegments; i++) {
+                const startAngle = currentAngle + i * arcSize;
+                const endAngle = startAngle + arcSize;
+
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = items[i].color;
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(center, center);
+                ctx.rotate(startAngle + arcSize / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 20px Arial";
+                ctx.fillText(items[i].text, radius - 30, 8);
+                ctx.restore();
+            }
+        }
+
+        drawWheel();
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.disabled = true;
+            resultCard.classList.remove('show');
+
+            const randomExtraRotations = Math.floor(Math.random() * 5) + 5; 
+            const winningIndex = Math.floor(Math.random() * numSegments);
+            
+            // Cible exacte pour placer le milieu du segment gagnant tout en haut sous le pointeur (-Math.PI / 2)
+            const targetSegmentAngle = winningIndex * arcSize + arcSize / 2;
+            const targetAngle = currentAngle + (randomExtraRotations * 2 * Math.PI) + ((3 * Math.PI / 2) - targetSegmentAngle - currentAngle) % (2 * Math.PI);
+            
+            const spinDuration = 4000;
+            const startTime = performance.now();
+            const startAngle = currentAngle;
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                currentAngle = startAngle + (targetAngle - startAngle) * easeOut;
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    
+                    const winner = items[winningIndex];
+                    
+                    resultTitle.innerHTML = `You won: ${winner.text}!`;
+                    resultCard.classList.add('show');
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
