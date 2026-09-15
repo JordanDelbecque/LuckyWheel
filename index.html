@@ -14,13 +14,16 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
             overflow-x: hidden;
         }
 
         .wheel-container {
             position: relative;
-            width: 400px;
-            height: 400px;
+            width: 100%;
+            max-width: 350px; /* Taille max sur PC, s'adapte sur mobile */
+            aspect-ratio: 1 / 1; /* Garde une forme parfaitement carrée */
         }
 
         canvas {
@@ -35,8 +38,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
+            width: 20%; /* Taille proportionnelle au conteneur */
+            height: 20%;
             background-color: white;
             border-radius: 50%;
             display: flex;
@@ -55,14 +58,14 @@
 
         .pointer {
             position: absolute;
-            top: -15px;
+            top: -12px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 30px solid #2b7bc3;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 25px solid #2b7bc3;
             z-index: 10;
         }
 
@@ -78,6 +81,8 @@
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: background 0.2s;
+            width: 100%;
+            max-width: 250px;
         }
 
         button:hover {
@@ -109,12 +114,15 @@
 
         .result-card {
             margin-top: 25px;
-            padding: 20px 40px;
+            padding: 20px 30px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             text-align: center;
             opacity: 0;
+            width: 90%;
+            max-width: 350px;
+            box-sizing: border-box;
         }
 
         .result-card.show {
@@ -124,13 +132,13 @@
         .result-card h2 {
             margin: 0 0 10px 0;
             color: #2b7bc3;
-            font-size: 22px;
+            font-size: 20px;
         }
 
         .result-card p {
             margin: 0;
             color: #555;
-            font-size: 16px;
+            font-size: 15px;
         }
     </style>
 </head>
@@ -138,11 +146,11 @@
 
     <div class="wheel-container">
         <div class="pointer"></div>
-       <div class="wheel-center-logo">
-            <!-- Logo intégré -->
+        <div class="wheel-center-logo">
             <img src="https://i.ibb.co/7JfppDDJ/logo.png" alt="Lactinov" id="logoImg">
         </div>
-        <canvas id="wheel" width="500" height="500"></canvas>
+        <!-- Résolution interne augmentée pour un affichage net sur écrans haute définition (Retina/Mobile) -->
+        <canvas id="wheel" width="800" height="800"></canvas>
     </div>
 
     <button id="spinBtn" onclick="spinWheel()">SPIN THE WHEEL</button>
@@ -174,6 +182,9 @@
         let currentAngle = 0;
         let isSpinning = false;
 
+        const logoImg = document.getElementById('logoImg');
+        logoImg.src = "https://i.ibb.co/7JfppDDJ/logo.png";
+
         function drawWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const center = canvas.width / 2;
@@ -196,8 +207,8 @@
                 ctx.rotate(startAngle + arcSize / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#fff";
-                ctx.font = "bold 20px Arial";
-                ctx.fillText(items[i].text, radius - 30, 8);
+                ctx.font = "bold 30px Arial"; // Police agrandie pour correspondre à la résolution 800x800 du canvas
+                ctx.fillText(items[i].text, radius - 45, 10);
                 ctx.restore();
             }
         }
@@ -213,7 +224,6 @@
             const randomExtraRotations = Math.floor(Math.random() * 5) + 5; 
             const winningIndex = Math.floor(Math.random() * numSegments);
             
-            // Cible exacte pour placer le milieu du segment gagnant tout en haut sous le pointeur (-Math.PI / 2)
             const targetSegmentAngle = winningIndex * arcSize + arcSize / 2;
             const targetAngle = currentAngle + (randomExtraRotations * 2 * Math.PI) + ((3 * Math.PI / 2) - targetSegmentAngle - currentAngle) % (2 * Math.PI);
             
